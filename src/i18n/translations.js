@@ -2,7 +2,7 @@
 export const translations = {
   en: {
     app: {
-      name: 'DentaCare',
+      name: 'SmarTooth',
       tagline: 'Dental Clinic Management',
       loading: 'Loading…',
     },
@@ -186,7 +186,7 @@ export const translations = {
 
   ar: {
     app: {
-      name: 'دنتاكير',
+      name: 'SmarTooth',
       tagline: 'إدارة عيادات الأسنان',
       loading: 'جارٍ التحميل…',
     },

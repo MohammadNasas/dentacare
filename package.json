@@ -41,8 +41,8 @@
     "vite": "^5.4.0"
   },
   "build": {
-    "appId": "com.dentacare.clinic",
-    "productName": "DentaCare",
+    "appId": "com.smartooth.clinic",
+    "productName": "SmarTooth",
     "directories": {
       "output": "release",
       "buildResources": "build"
@@ -59,14 +59,14 @@
         { "target": "nsis", "arch": ["x64", "ia32"] }
       ],
       "icon": "build/icon.ico",
-      "artifactName": "DentaCare-Windows-${arch}-Setup.${ext}"
+      "artifactName": "SmarTooth-Windows-${arch}-Setup.${ext}"
     },
     "nsis": {
       "oneClick": true,
       "perMachine": false,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "DentaCare",
+      "shortcutName": "SmarTooth",
       "installerIcon": "build/icon.ico",
       "uninstallerIcon": "build/icon.ico"
     },
@@ -76,10 +76,10 @@
       ],
       "category": "public.app-category.medical",
       "icon": "build/icon.png",
-      "artifactName": "DentaCare-macOS-${arch}.${ext}"
+      "artifactName": "SmarTooth-macOS-${arch}.${ext}"
     },
     "dmg": {
-      "title": "DentaCare ${version}"
+      "title": "SmarTooth ${version}"
     }
   }
 }
