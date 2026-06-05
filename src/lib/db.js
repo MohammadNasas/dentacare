@@ -197,3 +197,13 @@ export function getOrInitDB() {
 
 // Demo credentials surfaced on the login screen.
 export const DEMO_LOGIN = { username: 'sara', password: '1234' }
+
+// Complimentary accounts — these emails get the Pro plan free (skip the paywall).
+export const COMPLIMENTARY_EMAILS = [
+  'halaqaryab123@gmail.com',
+  'raneem.alghoul@hotmail.com',
+  'jana.sr2002@gmail.com',
+]
+export function isComplimentary(email) {
+  return COMPLIMENTARY_EMAILS.includes((email || '').trim().toLowerCase())
+}

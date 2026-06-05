@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, useCallback, useRef } from 'react'
-import { hashPassword, DOCTOR_COLORS, resetDB, seedDB } from '../lib/db'
+import { hashPassword, DOCTOR_COLORS, resetDB, seedDB, isComplimentary } from '../lib/db'
 import { backend } from '../lib/backend'
 import { getPaymentReturn, verifyPayment, clearPaymentReturn } from '../lib/payments'
 
@@ -34,8 +34,14 @@ export function StoreProvider({ children }) {
     const me = await backend.restore()
     if (me && me.clinic) {
       const data = await backend.bootstrap(me.clinic.id)
+      let clinic = data.clinic || me.clinic
+      // Complimentary accounts → free Pro (skip the paywall).
+      if (backend.mode === 'cloud' && isComplimentary(me.user?.email) && (!clinic.paid || clinic.tier !== 'pro')) {
+        clinic = { ...clinic, tier: 'pro', paid: true }
+        backend.saveClinic(clinic).catch((e) => console.error(e))
+      }
       setState({
-        clinic: data.clinic || me.clinic,
+        clinic,
         currentUser: me.user,
         doctors: data.doctors, patients: data.patients, toothRecords: data.toothRecords,
         appointments: data.appointments, payments: data.payments, suggestions: data.suggestions,
