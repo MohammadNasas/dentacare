@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, useCallback, useRef } from 'react'
 import { hashPassword, DOCTOR_COLORS, resetDB, seedDB } from '../lib/db'
 import { backend } from '../lib/backend'
+import { getPaymentReturn, verifyPayment, clearPaymentReturn } from '../lib/payments'
 
 const StoreContext = createContext(null)
 
@@ -23,6 +24,7 @@ export function StoreProvider({ children }) {
   const [booting, setBooting] = useState(true)
   const [recovery, setRecovery] = useState(false)
   const [pendingOtp, setPendingOtp] = useState(null) // { email, pending } when email confirmation is on
+  const [paymentResult, setPaymentResult] = useState(null) // result after returning from MyFatoorah
   const [state, setState] = useState(EMPTY)
   const stateRef = useRef(state)
   useEffect(() => { stateRef.current = state }, [state])
@@ -59,6 +61,21 @@ export function StoreProvider({ children }) {
     })
     return () => data?.subscription?.unsubscribe?.()
   }, [])
+
+  // Handle the return from a MyFatoorah payment → verify & refresh the plan.
+  useEffect(() => {
+    const pid = getPaymentReturn()
+    if (!pid) return
+    clearPaymentReturn()
+    if (pid === 'error') { setPaymentResult({ ok: false }); return }
+    ;(async () => {
+      const res = await verifyPayment(pid)
+      if (res.ok) { await loadSession(); setPaymentResult({ ok: true, tier: res.tier }) }
+      else setPaymentResult({ ok: false, status: res.status })
+    })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  const dismissPaymentResult = useCallback(() => setPaymentResult(null), [])
 
   const resetPassword = useCallback((email) => backend.resetPassword(email), [])
   const updatePassword = useCallback(async (newPassword) => {
@@ -235,6 +252,7 @@ export function StoreProvider({ children }) {
   const value = {
     booting, recovery, mode: backend.mode,
     otpEmail: pendingOtp?.email || null, verifyOtp, resendOtp, cancelOtp,
+    paymentResult, dismissPaymentResult,
     clinic, currentUser, tier, can,
     login, logout, register, resetPassword, updatePassword,
     patients: state.patients, doctors: state.doctors, appointments: state.appointments,

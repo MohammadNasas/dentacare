@@ -5,21 +5,34 @@ import { useI18n } from '../i18n/I18nContext'
 import { useStore } from '../context/StoreContext'
 import { TIERS, tierPeriodLabel } from '../lib/db'
 import { PACKAGE_FEATURES, fullFeatures } from '../lib/packages'
-import { Modal } from '../components/ui'
+import { Modal, Spinner } from '../components/ui'
 import { cx } from '../lib/utils'
+import { paymentsEnabled, startCheckout } from '../lib/payments'
 import { ChartPreview, CalendarPreview, DashboardPreview } from '../components/PackagePreviews'
 
 const ICONS = { student: GraduationCap, economy: Building2, pro: Crown }
 
 export default function Packages() {
   const { t, lang, L, isRTL } = useI18n()
-  const { clinic, setTier } = useStore()
+  const { clinic, currentUser, setTier } = useStore()
   const [buying, setBuying] = useState(null)
   const [activated, setActivated] = useState(false)
   const [expanded, setExpanded] = useState({})
+  const [processing, setProcessing] = useState(false)
+  const [payError, setPayError] = useState('')
   const current = clinic?.tier
 
-  function confirmBuy() {
+  async function confirmBuy() {
+    setPayError('')
+    if (paymentsEnabled) {
+      setProcessing(true)
+      const res = await startCheckout({ tier: buying, clinicId: clinic.id, customerName: clinic.name, email: currentUser?.email })
+      if (res.ok && res.url) { window.location.href = res.url; return }
+      setProcessing(false)
+      setPayError(res.error === 'not_configured' ? t('packages.paymentsSoon') : (res.message || t('packages.payFailed')))
+      return
+    }
+    // Local/demo mode → activate instantly (no real billing).
     setTier(buying)
     setActivated(true)
     setTimeout(() => { setBuying(null); setActivated(false) }, 1600)
@@ -130,7 +143,7 @@ export default function Packages() {
 
       {/* Purchase modal */}
       {buying && (
-        <Modal open onClose={() => setActivated(false) || setBuying(null)} size="lg"
+        <Modal open onClose={() => { setActivated(false); setBuying(null); setPayError(''); setProcessing(false) }} size="lg"
           title={`${t('packages.whatYouGet')} — ${L(TIERS[buying])}`}
           icon={<Sparkles size={18} style={{ color: PACKAGE_FEATURES[buying].accent }} />}
         >
@@ -156,15 +169,17 @@ export default function Packages() {
                   </div>
                 ))}
               </div>
+              {payError && <p className="mt-4 rounded-lg bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-600">{payError}</p>}
               <div className="mt-5 flex items-center justify-between rounded-xl bg-ink-50 p-4">
                 <div>
                   <p className="text-sm text-ink-400">{L(TIERS[buying])}</p>
                   <p className="text-2xl font-extrabold text-ink-800">${TIERS[buying].price}<span className="text-sm font-normal text-ink-400"> {tierPeriodLabel(TIERS[buying], t)}</span></p>
                 </div>
-                <button onClick={confirmBuy} className="btn-primary !py-3 !px-6" style={{ background: PACKAGE_FEATURES[buying].accent }}>
-                  {t('packages.buyNow')} <ArrowRight size={16} className={isRTL ? 'rotate-180' : ''} />
+                <button onClick={confirmBuy} disabled={processing} className="btn-primary !py-3 !px-6" style={{ background: PACKAGE_FEATURES[buying].accent }}>
+                  {processing ? <Spinner /> : <>{paymentsEnabled ? t('packages.pay') : t('packages.buyNow')} <ArrowRight size={16} className={isRTL ? 'rotate-180' : ''} /></>}
                 </button>
               </div>
+              {paymentsEnabled && <p className="mt-2 text-center text-xs text-ink-400">🔒 {t('packages.securePay')}</p>}
             </>
           )}
         </Modal>

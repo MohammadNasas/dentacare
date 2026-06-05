@@ -1,6 +1,8 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { Stethoscope } from 'lucide-react'
+import { Stethoscope, CheckCircle2, XCircle } from 'lucide-react'
 import { useStore } from './context/StoreContext'
+import { useI18n } from './i18n/I18nContext'
+import { Modal } from './components/ui'
 import Layout from './components/Layout'
 import PublicEntry from './pages/PublicEntry'
 import ResetPassword from './pages/ResetPassword'
@@ -26,28 +28,48 @@ function Splash() {
   )
 }
 
+function PaymentResultOverlay({ result, onClose }) {
+  const { t } = useI18n()
+  return (
+    <Modal open onClose={onClose} size="sm">
+      <div className="flex flex-col items-center gap-3 py-4 text-center">
+        {result.ok
+          ? <CheckCircle2 size={52} className="text-emerald-500" />
+          : <XCircle size={52} className="text-rose-500" />}
+        <p className="text-lg font-bold text-ink-800">{result.ok ? t('packages.paySuccess') : t('packages.payCancelled')}</p>
+        <button onClick={onClose} className="btn-primary mt-2">{t('common.close')}</button>
+      </div>
+    </Modal>
+  )
+}
+
 export default function App() {
-  const { booting, currentUser, recovery } = useStore()
+  const { booting, currentUser, recovery, paymentResult, dismissPaymentResult } = useStore()
+
+  const overlay = paymentResult ? <PaymentResultOverlay result={paymentResult} onClose={dismissPaymentResult} /> : null
 
   if (booting) return <Splash />
   if (recovery) return <ResetPassword />
-  if (!currentUser) return <PublicEntry />
+  if (!currentUser) return <>{<PublicEntry />}{overlay}</>
 
   return (
-    <Routes>
-      <Route element={<Layout />}>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/patients" element={<Patients />} />
-        <Route path="/patients/:id" element={<PatientProfile />} />
-        <Route path="/appointments" element={<Appointments />} />
-        <Route path="/payments" element={<Payments />} />
-        <Route path="/reports" element={<Reports />} />
-        <Route path="/instructions" element={<Instructions />} />
-        <Route path="/download" element={<Download />} />
-        <Route path="/packages" element={<Packages />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Route>
-    </Routes>
+    <>
+      <Routes>
+        <Route element={<Layout />}>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/patients" element={<Patients />} />
+          <Route path="/patients/:id" element={<PatientProfile />} />
+          <Route path="/appointments" element={<Appointments />} />
+          <Route path="/payments" element={<Payments />} />
+          <Route path="/reports" element={<Reports />} />
+          <Route path="/instructions" element={<Instructions />} />
+          <Route path="/download" element={<Download />} />
+          <Route path="/packages" element={<Packages />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
+      </Routes>
+      {overlay}
+    </>
   )
 }
