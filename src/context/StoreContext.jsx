@@ -36,7 +36,7 @@ export function StoreProvider({ children }) {
       const data = await backend.bootstrap(me.clinic.id)
       let clinic = data.clinic || me.clinic
       // Complimentary accounts → free Pro (skip the paywall).
-      if (backend.mode === 'cloud' && isComplimentary(me.user?.email) && (!clinic.paid || clinic.tier !== 'pro')) {
+      if (backend.mode === 'cloud' && (!clinic.paid || clinic.tier !== 'pro') && await isComplimentary(me.user?.email)) {
         clinic = { ...clinic, tier: 'pro', paid: true }
         backend.saveClinic(clinic).catch((e) => console.error(e))
       }

@@ -198,12 +198,22 @@ export function getOrInitDB() {
 // Demo credentials surfaced on the login screen.
 export const DEMO_LOGIN = { username: 'sara', password: '1234' }
 
-// Complimentary accounts — these emails get the Pro plan free (skip the paywall).
-export const COMPLIMENTARY_EMAILS = [
-  'halaqaryab123@gmail.com',
-  'raneem.alghoul@hotmail.com',
-  'jana.sr2002@gmail.com',
+// Complimentary accounts (Pro for free). Stored as SHA-256 hashes so the actual
+// emails are never exposed in the public client bundle.
+const COMPLIMENTARY_HASHES = [
+  '50fb0c52d73b7b0963f9e2da16b619e1e14bf257ff868c856f581409d07471ed',
+  '9822c4c55a9c90f13a3d6b132f13f8f235c2df649bb6547c014f8e77afeaff64',
+  'f74ec02046e1787f8bcb6fbd3263a32be7d68cc1933f3d6ef2facaf48af2606f',
 ]
-export function isComplimentary(email) {
-  return COMPLIMENTARY_EMAILS.includes((email || '').trim().toLowerCase())
+async function sha256hex(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str))
+  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('')
+}
+export async function isComplimentary(email) {
+  if (!email) return false
+  try {
+    return COMPLIMENTARY_HASHES.includes(await sha256hex(email.trim().toLowerCase()))
+  } catch {
+    return false
+  }
 }
