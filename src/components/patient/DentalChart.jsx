@@ -288,10 +288,17 @@ function ToothModal({ patient, toothId, dentition, onClose }) {
           </div>
 
           {isOther && (
-            <Field label={lang === 'ar' ? 'اسم آخر (اكتبه)' : 'Custom name'}>
-              <input className="input" value={customLabel} autoFocus
-                onChange={(e) => setCustomLabel(e.target.value)}
-                placeholder={lang === 'ar' ? 'اكتب الاسم…' : 'Type a name…'} />
+            <Field label={lang === 'ar' ? 'اسم آخر (اكتبه ثم اضغط +)' : 'Custom name (type, then +)'}>
+              <div className="flex gap-2">
+                <input className="input" value={customLabel} autoFocus
+                  onChange={(e) => setCustomLabel(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); save() } }}
+                  placeholder={lang === 'ar' ? 'اكتب الاسم…' : 'Type a name…'} />
+                <button type="button" onClick={save} disabled={!customLabel.trim()}
+                  className="btn-primary shrink-0 !px-3.5" title={lang === 'ar' ? 'إضافة' : 'Add'}>
+                  <Plus size={18} />
+                </button>
+              </div>
             </Field>
           )}
 
