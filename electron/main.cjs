@@ -1,6 +1,7 @@
 // Electron main process — wraps the DentaCare web app as a desktop application.
 const { app, BrowserWindow, shell, Menu } = require('electron')
 const path = require('path')
+const { autoUpdater } = require('electron-updater')
 
 const isDev = !app.isPackaged
 let mainWindow = null
@@ -48,8 +49,23 @@ function createWindow() {
   })
 }
 
+// Auto-update: in the installed app, quietly check GitHub Releases for a newer
+// version, download it in the background, and install it on the next restart.
+// Errors (offline, or no release published yet) are swallowed so they never
+// block the app from starting.
+function setupAutoUpdates() {
+  if (!app.isPackaged) return // updates only apply to the installed desktop app
+  autoUpdater.autoDownload = true
+  autoUpdater.autoInstallOnAppQuit = true
+  autoUpdater.on('error', (err) => console.error('[updater]', err == null ? 'unknown' : err.message || err))
+  autoUpdater.checkForUpdatesAndNotify().catch(() => {})
+  // Re-check every 6 hours for apps that stay open all day.
+  setInterval(() => { autoUpdater.checkForUpdatesAndNotify().catch(() => {}) }, 6 * 60 * 60 * 1000)
+}
+
 app.whenReady().then(() => {
   createWindow()
+  setupAutoUpdates()
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
