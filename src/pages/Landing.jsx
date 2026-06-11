@@ -113,23 +113,27 @@ export default function Landing({ onEnter }) {
 
         {/* Floating decorative teeth */}
         <motion.div
-          animate={{ y: [0, -14, 0], rotate: [0, 6, 0] }}
+          animate={{ y: [0, -16, 0], rotate: [0, 8, 0] }}
           transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
-          className="pointer-events-none absolute start-[6%] top-16 opacity-[0.07]">
-          <svg viewBox="0 0 60 80" width="70" fill="white">
-            <ellipse cx="30" cy="28" rx="22" ry="26" />
-            <rect x="16" y="48" width="12" height="28" rx="6" />
-            <rect x="32" y="48" width="12" height="28" rx="6" />
+          className="pointer-events-none absolute start-[5%] top-14 opacity-20">
+          <svg viewBox="0 0 50 72" width="72" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 6 C8 6 2 10 2 22 C2 34 6 40 10 44 C12 46 13 52 14 60 C15 66 17 70 20 70 C23 70 24 64 25 58 C26 64 27 70 30 70 C33 70 35 66 36 60 C37 52 38 46 40 44 C44 40 48 34 48 22 C48 10 42 6 42 6 C38 2 34 1 25 1 C16 1 12 2 8 6 Z" fill="white" fillOpacity="0.15" stroke="white" strokeWidth="1.5"/>
           </svg>
         </motion.div>
         <motion.div
-          animate={{ y: [0, 14, 0], rotate: [0, -8, 0] }}
+          animate={{ y: [0, 16, 0], rotate: [0, -10, 0] }}
           transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut', delay: 1.5 }}
-          className="pointer-events-none absolute end-[5%] bottom-16 opacity-[0.07]">
-          <svg viewBox="0 0 60 80" width="90" fill="white">
-            <ellipse cx="30" cy="28" rx="22" ry="26" />
-            <rect x="16" y="48" width="12" height="28" rx="6" />
-            <rect x="32" y="48" width="12" height="28" rx="6" />
+          className="pointer-events-none absolute end-[4%] bottom-12 opacity-20">
+          <svg viewBox="0 0 50 72" width="96" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 6 C8 6 2 10 2 22 C2 34 6 40 10 44 C12 46 13 52 14 60 C15 66 17 70 20 70 C23 70 24 64 25 58 C26 64 27 70 30 70 C33 70 35 66 36 60 C37 52 38 46 40 44 C44 40 48 34 48 22 C48 10 42 6 42 6 C38 2 34 1 25 1 C16 1 12 2 8 6 Z" fill="white" fillOpacity="0.15" stroke="white" strokeWidth="1.5"/>
+          </svg>
+        </motion.div>
+        <motion.div
+          animate={{ y: [0, -10, 0], rotate: [0, -6, 0] }}
+          transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut', delay: 3 }}
+          className="pointer-events-none absolute start-[18%] bottom-10 opacity-10">
+          <svg viewBox="0 0 50 72" width="50" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 6 C8 6 2 10 2 22 C2 34 6 40 10 44 C12 46 13 52 14 60 C15 66 17 70 20 70 C23 70 24 64 25 58 C26 64 27 70 30 70 C33 70 35 66 36 60 C37 52 38 46 40 44 C44 40 48 34 48 22 C48 10 42 6 42 6 C38 2 34 1 25 1 C16 1 12 2 8 6 Z" fill="white" fillOpacity="0.15" stroke="white" strokeWidth="1.5"/>
           </svg>
         </motion.div>
 
