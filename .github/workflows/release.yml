@@ -2,14 +2,14 @@ name: Build & Release
 
 on:
   push:
-    tags: ['v*']
+    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  # ── المرحلة 1: بناء كل نظام وحفظ الملفات مؤقتاً ──────────────────────────
+  # ── بناء الـ installer على كل push لـ main تلقائياً ────────────────────────
   build:
     strategy:
       fail-fast: false
@@ -24,20 +24,22 @@ jobs:
         with:
           node-version: 20
 
+      # الإصدار = الرقم الأساسي من package.json + رقم الـ CI run (دائماً يزيد)
+      - name: Set auto version
+        run: npm version 1.0.${{ github.run_number }} --no-git-tag-version --allow-same-version
+
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Build & package installer (no publish)
+      - name: Build & package installer
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          # macOS: skip code signing — no certificate in CI
           CSC_IDENTITY_AUTO_DISCOVERY: false
           USE_HARD_LINKS: false
         run: npm run dist:ci
 
-      # رفع الملفات المبنية كـ artifact مؤقت
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -52,7 +54,7 @@ jobs:
             release/*.yml
             release/*.yaml
 
-  # ── المرحلة 2: بعد ما الكل يبني، انشر release واحد بكل الملفات ────────────
+  # ── نشر release واحد بعد ما الكل يبني ─────────────────────────────────────
   publish:
     needs: build
     runs-on: ubuntu-latest
@@ -64,12 +66,11 @@ jobs:
           path: artifacts
           merge-multiple: true
 
-      - name: List artifacts
-        run: ls -la artifacts/
-
-      - name: Create GitHub Release with all installers
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: v1.0.${{ github.run_number }}
           files: artifacts/**
           draft: false
           prerelease: false
