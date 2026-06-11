@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { Stethoscope, CheckCircle2, XCircle } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { CheckCircle2, XCircle } from 'lucide-react'
 import { useStore } from './context/StoreContext'
 import { useI18n } from './i18n/I18nContext'
 import { Modal } from './components/ui'
@@ -21,11 +22,25 @@ import Lab from './pages/Lab'
 
 function Splash() {
   return (
-    <div className="flex h-screen flex-col items-center justify-center gap-4 bg-[var(--app-bg)]">
-      <div className="flex h-16 w-16 animate-pulse items-center justify-center rounded-2xl bg-brand-600 text-white shadow-soft">
-        <Stethoscope size={30} />
-      </div>
-      <span className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-brand-300 border-t-brand-600" />
+    <div className="flex h-screen flex-col items-center justify-center gap-5 bg-[var(--app-bg)]">
+      <motion.div
+        initial={{ scale: 0.6, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+        className="overflow-hidden rounded-2xl shadow-lg"
+        style={{ width: 72, height: 72 }}
+      >
+        <img src="/logo.png" alt="logo" className="h-full w-full object-cover" />
+      </motion.div>
+      <motion.div
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="flex flex-col items-center gap-2"
+      >
+        <span className="text-lg font-extrabold text-ink-700">DentalCloud</span>
+        <span className="h-5 w-5 animate-spin rounded-full border-2 border-brand-200 border-t-brand-600" />
+      </motion.div>
     </div>
   )
 }

@@ -1,4 +1,5 @@
-import { motion } from 'framer-motion'
+import { motion, animate, useInView } from 'framer-motion'
+import { useRef, useEffect, useState } from 'react'
 import {
   Stethoscope, Globe, ArrowRight, Check, Grid3x3, CalendarDays, Wallet,
   Activity, FileText, Images, BarChart3, ShieldCheck, Sparkles, Star, Crown,
@@ -11,6 +12,23 @@ import { ChartPreview, CalendarPreview, DashboardPreview, AppShowcase } from '..
 import { cx } from '../lib/utils'
 
 const TIER_ICON = { student: GraduationCap, economy: Building2, pro: Crown }
+
+function CountUp({ to, suffix = '', duration = 1.6 }) {
+  const ref = useRef(null)
+  const inView = useInView(ref, { once: true })
+  const [val, setVal] = useState('0')
+  useEffect(() => {
+    if (!inView) return
+    const num = parseFloat(String(to).replace(/[^0-9.]/g, ''))
+    const controls = animate(0, num, {
+      duration,
+      ease: 'easeOut',
+      onUpdate: (v) => setVal(num >= 1000 ? `${(v / 1000).toFixed(1)}k` : `${Math.round(v)}`),
+    })
+    return controls.stop
+  }, [inView, to, duration])
+  return <span ref={ref}>{val}{suffix}</span>
+}
 
 export default function Landing({ onEnter }) {
   const { t, lang, L, toggleLang, isRTL } = useI18n()
@@ -47,28 +65,44 @@ export default function Landing({ onEnter }) {
       <section className="relative overflow-hidden">
         <div className="absolute -end-32 -top-32 h-96 w-96 rounded-full bg-brand-200/40 blur-3xl" />
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-14 sm:px-6 lg:grid-cols-2 lg:py-20">
-          <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}>
-            <span className="chip bg-brand-50 text-brand-700"><Cloud size={13} /> {lang === 'ar' ? 'سحابي · ويب + سطح المكتب' : 'Cloud · Web + Desktop'}</span>
-            <h1 className="mt-4 text-4xl font-extrabold leading-tight text-ink-900 sm:text-5xl">
+          <div>
+            <motion.span
+              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
+              className="chip bg-brand-50 text-brand-700">
+              <Cloud size={13} /> {lang === 'ar' ? 'سحابي · ويب + سطح المكتب' : 'Cloud · Web + Desktop'}
+            </motion.span>
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.5 }}
+              className="mt-4 text-4xl font-extrabold leading-tight text-ink-900 sm:text-5xl">
               {lang === 'ar' ? 'إدارة عيادة أسنانك' : 'Run your dental clinic,'}<br />
-              <span className="text-brand-600">{lang === 'ar' ? 'بذكاء وسلاسة.' : 'beautifully.'}</span>
-            </h1>
-            <p className="mt-4 max-w-md text-lg text-ink-500">
+              <motion.span
+                initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3, duration: 0.5 }}
+                className="text-brand-600">
+                {lang === 'ar' ? 'بذكاء وسلاسة.' : 'beautifully.'}
+              </motion.span>
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25, duration: 0.45 }}
+              className="mt-4 max-w-md text-lg text-ink-500">
               {lang === 'ar'
                 ? 'مرضى، مواعيد، مخططات أسنان ولثة، مدفوعات، تقارير وتعليمات — بمكان واحد، عربي وإنجليزي.'
                 : 'Patients, appointments, dental & perio charts, payments, reports and instructions — all in one place, Arabic & English.'}
-            </p>
-            <div className="mt-7 flex flex-wrap gap-3">
+            </motion.p>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.38, duration: 0.4 }}
+              className="mt-7 flex flex-wrap gap-3">
               <button onClick={() => onEnter('register')} className="btn-primary !px-6 !py-3 text-base">
                 {lang === 'ar' ? 'أنشئ عيادتك الآن' : 'Set up your clinic'} <ArrowRight size={18} className={isRTL ? 'rotate-180' : ''} />
               </button>
               <button onClick={() => onEnter('signin')} className="btn-outline !px-6 !py-3 text-base">{t('auth.signIn')}</button>
-            </div>
-            <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-ink-400">
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.55, duration: 0.4 }}
+              className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-ink-400">
               <span className="flex items-center gap-1.5"><ShieldCheck size={15} className="text-brand-500" /> {lang === 'ar' ? 'بياناتك محمية' : 'Your data is protected'}</span>
               <span className="flex items-center gap-1.5"><Sparkles size={15} className="text-amber-500" /> {lang === 'ar' ? 'باقة الطالب $5 لمرة واحدة — للأبد' : 'Student plan: $5 once — forever'}</span>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
 
           {/* Screenshot collage */}
           <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.15 }} className="relative">
@@ -166,17 +200,25 @@ export default function Landing({ onEnter }) {
             initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }}
             className="mt-10 flex flex-wrap justify-center gap-4">
             {[
-              { emoji: '🦷', val: '1,200+', label: lang === 'ar' ? 'مريض في النظام' : 'Patients managed' },
-              { emoji: '📅', val: '450+',   label: lang === 'ar' ? 'موعد شهرياً'    : 'Monthly appointments' },
-              { emoji: '⚡', val: '< 1s',   label: lang === 'ar' ? 'زمن التحميل'    : 'Load time' },
-            ].map((s) => (
-              <div key={s.label} className="flex items-center gap-3 rounded-2xl bg-white/8 px-5 py-3.5 ring-1 ring-white/10 backdrop-blur">
+              { emoji: '🦷', to: 1200, suffix: '+', label: lang === 'ar' ? 'مريض في النظام' : 'Patients managed' },
+              { emoji: '📅', to: 450,  suffix: '+', label: lang === 'ar' ? 'موعد شهرياً'    : 'Monthly appointments' },
+              { emoji: '⚡', to: 0.3,  suffix: 's',  label: lang === 'ar' ? 'زمن التحميل'    : 'Load time' },
+            ].map((s, i) => (
+              <motion.div
+                key={s.label}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 + i * 0.1, duration: 0.4 }}
+                className="flex items-center gap-3 rounded-2xl bg-white/8 px-5 py-3.5 ring-1 ring-white/10 backdrop-blur">
                 <span className="text-2xl">{s.emoji}</span>
                 <div>
-                  <p className="text-base font-extrabold text-white">{s.val}</p>
+                  <p className="text-base font-extrabold text-white">
+                    <CountUp to={s.to} suffix={s.suffix} />
+                  </p>
                   <p className="text-xs text-white/50">{s.label}</p>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </motion.div>
         </div>
@@ -189,13 +231,20 @@ export default function Landing({ onEnter }) {
           <p className="mt-1 text-ink-400">{t('packages.subtitle')}</p>
         </div>
         <div className="grid gap-5 lg:grid-cols-3">
-          {Object.values(TIERS).map((tier) => {
+          {Object.values(TIERS).map((tier, idx) => {
             const Icon = TIER_ICON[tier.id]; const accent = PACKAGE_FEATURES[tier.id].accent
             const popular = tier.id === 'economy'
             const own = PACKAGE_FEATURES[tier.id].features
             const inheritsId = PACKAGE_FEATURES[tier.id].inherits
             return (
-              <div key={tier.id} className={cx('card relative flex flex-col p-6', popular && 'ring-2 ring-brand-400')}>
+              <motion.div
+                key={tier.id}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.1, duration: 0.4 }}
+                whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                className={cx('card relative flex flex-col p-6 cursor-default', popular && 'ring-2 ring-brand-400')}>
                 {popular && <div className="absolute top-0 flex items-center gap-1 rounded-b-lg bg-brand-500 px-3 py-1 text-xs font-bold text-white end-5"><Star size={12} /> {t('packages.mostPopular')}</div>}
                 <div className="flex items-center gap-3">
                   <div className="flex h-11 w-11 items-center justify-center rounded-xl text-white" style={{ background: accent }}><Icon size={22} /></div>
@@ -211,7 +260,7 @@ export default function Landing({ onEnter }) {
                   {own.map((f, i) => <li key={i} className="flex items-start gap-2 text-sm text-ink-600"><Check size={15} className="mt-0.5 shrink-0" style={{ color: accent }} />{L(f)}</li>)}
                 </ul>
                 <button onClick={() => onEnter('register')} className="btn w-full text-white" style={{ background: accent }}>{t('packages.buyNow')}</button>
-              </div>
+              </motion.div>
             )
           })}
         </div>

@@ -12,6 +12,15 @@ import { isElectron } from '../lib/downloads'
 import { cx } from '../lib/utils'
 import { Avatar } from './ui'
 
+const NAV_CONTAINER = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.05, delayChildren: 0.1 } },
+}
+const NAV_ITEM = {
+  hidden: { opacity: 0, x: -12 },
+  show:   { opacity: 1, x: 0, transition: { duration: 0.22, ease: 'easeOut' } },
+}
+
 const NAV = [
   { to: '/', key: 'dashboard', icon: LayoutDashboard, end: true },
   { to: '/patients', key: 'patients', icon: Users },
@@ -34,24 +43,30 @@ export default function Layout() {
   const tierInfo = TIERS[clinic?.tier || 'student']
 
   const NavList = ({ onNavigate }) => (
-    <nav className="flex flex-1 flex-col gap-1 px-3">
+    <motion.nav
+      className="flex flex-1 flex-col gap-1 px-3"
+      variants={NAV_CONTAINER}
+      initial="hidden"
+      animate="show"
+    >
       {NAV.map((item) => {
         const locked = item.feature && !can(item.feature)
         return (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.end}
-            onClick={onNavigate}
-            className={({ isActive }) => cx('nav-link group', isActive && 'nav-link-active')}
-          >
-            <item.icon size={19} className="shrink-0" />
-            <span className="flex-1">{t(`nav.${item.key}`)}</span>
-            {locked && <Lock size={13} className="text-amber-400" />}
-          </NavLink>
+          <motion.div key={item.to} variants={NAV_ITEM}>
+            <NavLink
+              to={item.to}
+              end={item.end}
+              onClick={onNavigate}
+              className={({ isActive }) => cx('nav-link group', isActive && 'nav-link-active')}
+            >
+              <item.icon size={19} className="shrink-0" />
+              <span className="flex-1">{t(`nav.${item.key}`)}</span>
+              {locked && <Lock size={13} className="text-amber-400" />}
+            </NavLink>
+          </motion.div>
         )
       })}
-    </nav>
+    </motion.nav>
   )
 
   const SidebarInner = ({ onNavigate }) => (
@@ -153,9 +168,18 @@ export default function Layout() {
         </header>
 
         <main className="min-h-0 flex-1 overflow-y-auto">
-          <div key={location.pathname} className="page-enter mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-6">
-            <Outlet />
-          </div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-6"
+            >
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
         </main>
       </div>
     </div>
