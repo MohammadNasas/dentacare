@@ -93,6 +93,15 @@ export default function Login({ initialTab = 'signin', onBack }) {
         <div className="absolute -end-24 -top-24 h-96 w-96 rounded-full bg-white/10 blur-2xl" />
         <div className="absolute -bottom-32 -start-20 h-96 w-96 rounded-full bg-teal-300/20 blur-3xl" />
 
+        {/* Live heartbeat line */}
+        <svg className="pointer-events-none absolute inset-x-0 bottom-0 h-16 w-full opacity-25" viewBox="0 0 400 60" preserveAspectRatio="none">
+          <motion.path
+            d="M0 30 H110 L122 30 L130 8 L140 52 L150 22 L160 30 H250 L262 30 L270 12 L280 48 L290 26 L300 30 H400"
+            fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" pathLength="1"
+            initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
+            transition={{ duration: 2.4, ease: 'easeInOut', repeat: Infinity, repeatDelay: 0.2 }} />
+        </svg>
+
         <div className="relative flex items-center gap-3 text-white">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl overflow-hidden bg-white/15 backdrop-blur">
             <img src="/logo.png" alt="logo" className="h-full w-full object-cover" />

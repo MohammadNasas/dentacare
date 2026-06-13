@@ -6,6 +6,7 @@ import { DENTAL_ITEMS } from '../../lib/treatments'
 import { SYSTEMS_HISTORY, ALLERGIES, MEDICATIONS } from '../../lib/history'
 import FeatureLock from '../FeatureLock'
 import { Badge } from '../ui'
+import { ProgressRing } from '../anim'
 import { fmtDate } from '../../lib/dates'
 
 // High-risk systemic flags worth surfacing prominently.
@@ -43,6 +44,10 @@ export default function Overview({ patient, onTab }) {
 
   const recent = [...records].filter((r) => r.toothId !== '0' || r.itemKey)
     .sort((a, b) => (b.date || '').localeCompare(a.date || '')).slice(0, 5)
+
+  const totalTx = records.length
+  const doneTx = records.filter((r) => r.status === 'done').length
+  const txPct = totalTx ? Math.round((doneTx / totalTx) * 100) : 0
 
   return (
     <div className="grid gap-5 lg:grid-cols-3">
@@ -108,6 +113,16 @@ export default function Overview({ patient, onTab }) {
 
       {/* Side: alerts */}
       <div className="space-y-5">
+        {totalTx > 0 && (
+          <div className="card card-hover flex items-center gap-4 p-4">
+            <ProgressRing value={txPct} size={66} stroke={7} label={`${txPct}%`} />
+            <div className="min-w-0">
+              <p className="font-bold text-ink-800">{lang === 'ar' ? 'تقدّم العلاج' : 'Treatment progress'}</p>
+              <p className="text-sm text-ink-400">{doneTx}/{totalTx} {lang === 'ar' ? 'مكتمل' : 'completed'}</p>
+            </div>
+          </div>
+        )}
+
         <div className="card p-4">
           <h3 className="mb-3 flex items-center gap-2 font-bold text-ink-800"><ShieldAlert size={18} className="text-rose-500" /> {lang === 'ar' ? 'تنبيهات طبية' : 'Medical alerts'}</h3>
           {alerts.length === 0 ? (

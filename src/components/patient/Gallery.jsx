@@ -1,10 +1,12 @@
 import { useEffect, useState, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Upload, Trash2, Images, X, Scan } from 'lucide-react'
 import { useI18n } from '../../i18n/I18nContext'
 import { useStore } from '../../context/StoreContext'
 import { putImage, getImage, deleteImage, fileToResizedDataURL } from '../../lib/media'
 import { genId } from '../../lib/db'
 import { EmptyState, Segmented } from '../ui'
+import { toast } from '../anim'
 import { fmtDate } from '../../lib/dates'
 import { cx } from '../../lib/utils'
 
@@ -22,6 +24,7 @@ export default function Gallery({ patient }) {
   const [urls, setUrls] = useState({})
   const [category, setCategory] = useState('before')
   const [busy, setBusy] = useState(false)
+  const [progress, setProgress] = useState({ done: 0, total: 0 })
   const [lightbox, setLightbox] = useState(null)
   const fileRef = useRef()
 
@@ -41,14 +44,16 @@ export default function Gallery({ patient }) {
   const [uploadError, setUploadError] = useState('')
 
   async function onFiles(files) {
+    const images = files.filter((f) => f.type.startsWith('image/'))
+    if (!images.length) return
     setBusy(true)
     setUploadError('')
+    setProgress({ done: 0, total: images.length })
     try {
       const currentPhotos = patient.photos || []
       const next = [...currentPhotos]
       let added = 0
-      for (const file of files) {
-        if (!file.type.startsWith('image/')) continue
+      for (const file of images) {
         try {
           const dataUrl = await fileToResizedDataURL(file)
           const id = genId('img')
@@ -60,12 +65,16 @@ export default function Gallery({ patient }) {
           console.error('Failed to process image:', err)
           setUploadError(lang === 'ar' ? 'فشل تحميل إحدى الصور، حاول مرة أخرى' : 'Failed to upload an image, try again')
         }
+        setProgress((p) => ({ ...p, done: p.done + 1 }))
       }
-      if (added > 0) updatePatient(patient.id, { photos: next })
+      if (added > 0) {
+        updatePatient(patient.id, { photos: next })
+        toast(lang === 'ar' ? `تم رفع ${added} صورة` : `Uploaded ${added} image${added > 1 ? 's' : ''}`)
+      }
     } catch (err) {
       console.error('Gallery upload error:', err)
       setUploadError(lang === 'ar' ? 'حدث خطأ أثناء الرفع' : 'Upload error, please try again')
-    } finally { setBusy(false) }
+    } finally { setBusy(false); setProgress({ done: 0, total: 0 }) }
   }
 
   function onDrop(e) {
@@ -103,6 +112,21 @@ export default function Gallery({ patient }) {
           <Upload size={20} className="mx-auto mb-1 text-ink-300" />
           {lang === 'ar' ? 'اسحب الصور هنا أو اضغط للاختيار' : 'Drag images here or click to choose'}
         </div>
+        <AnimatePresence>
+          {busy && progress.total > 0 && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
+              <div className="flex items-center justify-between pb-1 text-xs font-semibold text-ink-500">
+                <span>{lang === 'ar' ? 'جاري رفع الصور…' : 'Uploading images…'}</span>
+                <span>{Math.round((progress.done / progress.total) * 100)}%</span>
+              </div>
+              <div className="h-2 overflow-hidden rounded-full bg-ink-100">
+                <motion.div className="h-full rounded-full bg-brand-500"
+                  animate={{ width: `${(progress.done / progress.total) * 100}%` }}
+                  transition={{ ease: 'easeOut', duration: 0.4 }} />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
         {uploadError && <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-600">{uploadError}</p>}
       </div>
 
@@ -121,7 +145,7 @@ export default function Gallery({ patient }) {
                 <div key={p.id} className="group relative aspect-square overflow-hidden rounded-xl border border-ink-100 bg-ink-50">
                   {urls[p.id] ? (
                     <img src={urls[p.id]} alt="" onClick={() => setLightbox(urls[p.id])} className={cx('h-full w-full cursor-zoom-in object-cover', g.c === 'xray' && 'bg-black')} />
-                  ) : <div className="flex h-full items-center justify-center text-ink-300"><Images size={24} /></div>}
+                  ) : <span className="shimmer block h-full w-full" />}
                   <button onClick={() => remove(p.id)} className="absolute top-2 rounded-lg bg-white/90 p-1.5 text-rose-500 opacity-0 shadow transition-opacity group-hover:opacity-100 end-2"><Trash2 size={14} /></button>
                   <span className="absolute bottom-1 rounded bg-black/50 px-1.5 py-0.5 text-[10px] text-white start-1">{fmtDate(p.date, lang)}</span>
                 </div>

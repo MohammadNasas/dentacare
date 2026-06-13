@@ -1,17 +1,18 @@
 import { useState } from 'react'
-import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard, Users, CalendarDays, Wallet, BarChart3, Package,
-  Settings, LogOut, Menu, X, Lock, Globe, Stethoscope, FileText, Download, FlaskConical,
+  Settings, LogOut, Menu, X, Lock, Globe, Stethoscope, FileText, Download, FlaskConical, Bell,
 } from 'lucide-react'
 import { useI18n } from '../i18n/I18nContext'
 import { useStore } from '../context/StoreContext'
 import { TIERS } from '../lib/db'
 import { isElectron } from '../lib/downloads'
 import { cx } from '../lib/utils'
+import { isToday, parseISO, fmtTime } from '../lib/dates'
 import { Avatar } from './ui'
-import { PingDot } from './anim'
+import { PingDot, AnimatedBell } from './anim'
 
 const NAV_CONTAINER = {
   hidden: {},
@@ -20,6 +21,45 @@ const NAV_CONTAINER = {
 const NAV_ITEM = {
   hidden: { opacity: 0, x: -12 },
   show:   { opacity: 1, x: 0, transition: { duration: 0.22, ease: 'easeOut' } },
+}
+
+function NotificationsBell({ items, lang, navigate }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="relative">
+      <button onClick={() => setOpen((o) => !o)} className="rounded-lg p-2 text-ink-500 hover:bg-ink-100" title={lang === 'ar' ? 'الإشعارات' : 'Notifications'}>
+        <AnimatedBell count={items.length}><Bell size={18} /></AnimatedBell>
+      </button>
+      <AnimatePresence>
+        {open && (
+          <>
+            <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+            <motion.div
+              initial={{ opacity: 0, y: -8, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -8, scale: 0.96 }}
+              transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+              className="absolute z-50 mt-2 w-72 overflow-hidden rounded-xl border border-ink-100 bg-white shadow-card end-0">
+              <div className="border-b border-ink-100 px-4 py-2.5 text-sm font-bold text-ink-700">
+                {lang === 'ar' ? 'مواعيد اليوم' : "Today's appointments"}
+              </div>
+              {items.length === 0 ? (
+                <div className="px-4 py-6 text-center text-sm text-ink-400">{lang === 'ar' ? 'لا مواعيد اليوم' : 'No appointments today'}</div>
+              ) : (
+                <div className="max-h-72 divide-y divide-ink-50 overflow-y-auto">
+                  {items.map((a) => (
+                    <button key={a.id} onClick={() => { navigate(`/patients/${a.patientId}`); setOpen(false) }}
+                      className="flex w-full items-center gap-3 px-4 py-2.5 text-start hover:bg-ink-50">
+                      <span className="w-12 shrink-0 text-xs font-bold text-brand-600">{a.time}</span>
+                      <span className="flex-1 truncate text-sm font-semibold text-ink-700">{a.name}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </div>
+  )
 }
 
 const NAV = [
@@ -37,11 +77,20 @@ const NAV = [
 
 export default function Layout() {
   const { t, L, lang, toggleLang } = useI18n()
-  const { currentUser, clinic, logout, can } = useStore()
+  const { currentUser, clinic, logout, can, appointments, getPatient } = useStore()
   const [mobileOpen, setMobileOpen] = useState(false)
   const location = useLocation()
+  const navigate = useNavigate()
 
   const tierInfo = TIERS[clinic?.tier || 'student']
+
+  const todayItems = (appointments || [])
+    .filter((a) => isToday(parseISO(a.start)) && a.status !== 'cancelled')
+    .sort((a, b) => a.start.localeCompare(b.start))
+    .map((a) => {
+      const p = getPatient(a.patientId)
+      return { id: a.id, patientId: a.patientId, time: fmtTime(a.start, lang), name: (lang === 'ar' ? p?.nameAr || p?.name : p?.name) || '' }
+    })
 
   const NavList = ({ onNavigate }) => (
     <motion.nav
@@ -173,6 +222,7 @@ export default function Layout() {
             <span className="hidden items-center gap-1.5 text-xs font-semibold text-emerald-600 sm:flex">
               <PingDot /> {lang === 'ar' ? 'متصل' : 'Online'}
             </span>
+            {can('appointments') && <NotificationsBell items={todayItems} lang={lang} navigate={navigate} />}
             <motion.button
               onClick={toggleLang}
               whileTap={{ scale: 0.9, rotate: -12 }}
