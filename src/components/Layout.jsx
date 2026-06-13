@@ -13,6 +13,7 @@ import { cx } from '../lib/utils'
 import { isToday, parseISO, fmtTime } from '../lib/dates'
 import { Avatar } from './ui'
 import { PingDot, AnimatedBell } from './anim'
+import logo from '../lib/logo'
 
 const NAV_CONTAINER = {
   hidden: {},
@@ -137,7 +138,7 @@ export default function Layout() {
       {/* Brand */}
       <div className="flex items-center gap-3 px-5 py-5">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden shadow-soft">
-          <img src="/logo.png" alt="logo" className="h-full w-full object-cover" />
+          <img src={logo} alt="logo" className="h-full w-full object-cover" />
         </div>
         <div className="leading-tight">
           <p className="text-lg font-extrabold text-ink-800">{t('app.name')}</p>

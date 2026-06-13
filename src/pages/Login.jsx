@@ -10,6 +10,7 @@ import { TIERS, DEMO_LOGIN, tierPeriodLabel } from '../lib/db'
 import { Field, Spinner } from '../components/ui'
 import { FloatingField } from '../components/anim'
 import { cx } from '../lib/utils'
+import logo from '../lib/logo'
 
 export default function Login({ initialTab = 'signin', onBack }) {
   const { t, L, lang, toggleLang, isRTL } = useI18n()
@@ -104,7 +105,7 @@ export default function Login({ initialTab = 'signin', onBack }) {
 
         <div className="relative flex items-center gap-3 text-white">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl overflow-hidden bg-white/15 backdrop-blur">
-            <img src="/logo.png" alt="logo" className="h-full w-full object-cover" />
+            <img src={logo} alt="logo" className="h-full w-full object-cover" />
           </div>
           <div>
             <p className="text-2xl font-extrabold">{t('app.name')}</p>
@@ -148,7 +149,7 @@ export default function Login({ initialTab = 'signin', onBack }) {
               </button>
             ) : (
               <div className="flex items-center gap-2 lg:hidden">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden"><img src="/logo.png" alt="logo" className="h-full w-full object-cover" /></div>
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden"><img src={logo} alt="logo" className="h-full w-full object-cover" /></div>
                 <span className="text-xl font-extrabold text-ink-800">{t('app.name')}</span>
               </div>
             )}

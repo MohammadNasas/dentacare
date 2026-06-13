@@ -11,6 +11,7 @@ import { PACKAGE_FEATURES } from '../lib/packages'
 import { ChartPreview, CalendarPreview, DashboardPreview, AppShowcase } from '../components/PackagePreviews'
 import { Accordion, StarRating } from '../components/anim'
 import { cx } from '../lib/utils'
+import logo from '../lib/logo'
 
 const TIER_ICON = { student: GraduationCap, economy: Building2, pro: Crown }
 
@@ -51,7 +52,7 @@ export default function Landing({ onEnter }) {
       <header className="glass sticky top-0 z-30 border-b border-ink-100">
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 sm:px-6">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden"><img src="/logo.png" alt="logo" className="h-full w-full object-cover" /></div>
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden"><img src={logo} alt="logo" className="h-full w-full object-cover" /></div>
             <span className="text-xl font-extrabold text-ink-800">{t('app.name')}</span>
           </div>
           <div className="ms-auto flex items-center gap-2">

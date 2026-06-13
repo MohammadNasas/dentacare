@@ -5,6 +5,7 @@ import { useStore } from './context/StoreContext'
 import { useI18n } from './i18n/I18nContext'
 import { Modal } from './components/ui'
 import { Confetti, SuccessCheck, ToastHost } from './components/anim'
+import logo from './lib/logo'
 import Layout from './components/Layout'
 import PublicEntry from './pages/PublicEntry'
 import ResetPassword from './pages/ResetPassword'
@@ -31,7 +32,7 @@ function Splash() {
         className="overflow-hidden rounded-2xl shadow-lg"
         style={{ width: 72, height: 72 }}
       >
-        <img src="/logo.png" alt="logo" className="h-full w-full object-cover" />
+        <img src={logo} alt="logo" className="h-full w-full object-cover" />
       </motion.div>
       <motion.div
         initial={{ opacity: 0, y: 6 }}
